@@ -7,8 +7,10 @@ help:
 	@LC_ALL=C $(MAKE) -pRrq -f $(firstword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/(^|\n)# Files(\n|$$)/,/(^|\n)# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$'
 
 it_run:
-	bash <(curl -sL startr.sh) run
+	@bash -c 'bash <(curl -sL startr.sh) run'
 	
+it_deploy:
+	@bash -c 'caprover deploy --default'
 
 this_dev_env:
 	#make sure we have brew and docker installed
@@ -32,8 +34,9 @@ pi:
 	./Build.sh linux/arm/v7
 
 it_publish:
-	# Publish all our images to docker hub
-	./Publish.sh
+	# Publish the repo to our private registry
+	# and push to production
+	caprover deploy --default 
 
 it_flow:
 	git branch master || \

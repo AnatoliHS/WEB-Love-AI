@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM ghcr.io/open-webui/open-webui:git-1eec9e2-cuda as build
+FROM startr/ai-web-openwebui:0.3.39 as build
 
 # Use args
 ARG USE_CUDA
@@ -23,13 +23,6 @@ ENV ENV=prod \
 ENV OLLAMA_BASE_URL="/ollama" \
     OPENAI_API_BASE_URL=""
 
-## API Key and Security Config ##
-#ENV OPENAI_API_KEY="" \
-#    WEBUI_SECRET_KEY="" \
-#    SCARF_NO_ANALYTICS=true \
-#    DO_NOT_TRACK=true \
-#    ANONYMIZED_TELEMETRY=false
-
 # Use locally bundled version of the LiteLLM cost map json
 # to avoid repetitive startup connections
 ENV LITELLM_LOCAL_MODEL_COST_MAP="True"
@@ -47,34 +40,33 @@ ENV RAG_EMBEDDING_MODEL="$USE_EMBEDDING_MODEL_DOCKER" \
 
 ## Hugging Face download cache ##
 ENV HF_HOME="/app/backend/data/cache/embedding/models"
+
 #### Other models ##########################################################
 
 WORKDIR /app/backend
 
-RUN find . -type f -exec sed -i 's|Open WebUI|Canadians.Love/AI|g' {} +
-RUN find . -name "*.js" -type f -exec sed -i 's|locally hosted|private|g' {} + \
-  -exec sed -i 's|lokal gehosteten|privat|g' {} + \
-  -exec sed -i 's|lokaal gehoste|privé|g' {} + \
-  -exec sed -i 's|hébergé localement|privé|g' {} + \
-  -exec sed -i 's|로컬에서 호스팅되는 서버에|개인 서버에|g' {} + \
-  -exec sed -i 's|データはローカルでホストされているサーバー|プライベートサーバー|g' {} + \
-  -exec sed -i 's|هیچ اتصال خارجی ایجاد نمی کند و داده های شما به طور ایمن در سرور میزبان محلی شما باقی می ماند.|خصوصی|g' {} + \
-  -exec sed -i 's|ადგილობრივ სერვერზე|პრივატული|g' {} + \
-  -exec sed -i 's|lưu trữ cục bộ|riêng tư|g' {} + \
-  -exec sed -i 's|lokalnie hostowanym|prywatnie|g' {} + \
-  -exec sed -i 's|alojado localmente|privado|g' {} + \
-  -exec sed -i 's|hospedado localmente|privado|g' {} + \
-  -exec sed -i 's|的本地服|私人的|g' {} + \
-  -exec sed -i 's|локално назначен|частный|g' {} +
+#RUN find . -type f -exec sed -i 's|Open WebUI|Canadians.Love/AI|g' {} +
+#RUN find . -name "*.js" -type f -exec sed -i 's|locally hosted|private|g' {} + \
+#   -exec sed -i 's|lokal gehosteten|privat|g' {} + \
+#   -exec sed -i 's|lokaal gehoste|privé|g' {} + \
+#   -exec sed -i 's|hébergé localement|privé|g' {} + \
+#   -exec sed -i 's|로컬에서 호스팅되는 서버에|개인 서버에|g' {} + \
+#   -exec sed -i 's|データはローカルでホストされているサーバー|プライベートサーバー|g' {} + \
+#   -exec sed -i 's|هیچ اتصال خارجی ایجاد نمی کند و داده های شما به طور ایمن در سرور میزبان محلی شما باقی می ماند.|خصوصی|g' {} + \
+#   -exec sed -i 's|ადგილობრივ სერვერზე|პრივატული|g' {} + \
+#   -exec sed -i 's|lưu trữ cục bộ|riêng tư|g' {} + \
+#   -exec sed -i 's|lokalnie hostowanym|prywatnie|g' {} + \
+#   -exec sed -i 's|alojado localmente|privado|g' {} + \
+#   -exec sed -i 's|hospedado localmente|privado|g' {} + \
+#   -exec sed -i 's|的本地服|私人的|g' {} + \
+#   -exec sed -i 's|локално назначен|частный|g' {} +
 
-COPY static/favicon.png /app/backend/static/favicon.png
-COPY static/favicon.png /app/build/favicon.png
-COPY static/favicon.png /app/favicon.png
+#COPY static/favicon.png /app/backend/static/favicon.png
+#COPY static/favicon.png /app/build/favicon.png
+#COPY static/favicon.png /app/favicon.png
+# COPY static/assets/ /app/build/_app/immutable/assets/
 
-COPY static/assets/ /app/build/_app/immutable/assets/
-
-COPY backend/main.py /app/backend/open_webui/main.py
-
+#COPY backend/main.py /app/backend/open_webui/main.py
 
 ENV HOME=/root
 
@@ -87,4 +79,11 @@ USER $UID:$GID
 ARG BUILD_HASH
 ENV WEBUI_BUILD_VERSION=${BUILD_HASH}
 
-CMD [ "bash", "start.sh"]
+#
+# Auto backup & restore 
+# 
+# Based on https://snap.startr.cloud 
+# https://github.com/opencoca/WEB-SnapCloud
+#
+
+CMD [ "bash", "restore_backup_start.sh", "server" ]
